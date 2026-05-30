@@ -26,6 +26,7 @@ if (!nowtoken || !expireTime || now > expireTime) {
 // Ajouter un écouteur d'événement pour réinitialiser le temps d'expiration à chaque mouvement de souris
 function logout() {
     sessionStorage.clear();
+    localStorage.clear();
     window.location.href = "login.html";
 }
 // Fin du script session
@@ -74,6 +75,7 @@ function calculateAge(dateStr) {
 
     return age;
 }
+
 
 function btnAjout() {
     let students = JSON.parse(localStorage.getItem("studentsData"));
@@ -756,7 +758,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("idMatricule").value = localStorage.getItem("Mtrcl");
     }
 });
-console.log("xxxx",JSON.parse(localStorage.getItem("studentsData")))
 function goToFacture(index) {
     let studentsData = JSON.parse(localStorage.getItem("studentsData"));
     let student = studentsData[index];

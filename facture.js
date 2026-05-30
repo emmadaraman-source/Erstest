@@ -5,9 +5,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const page = path.split("/").pop();
 
     if (page === "facture.html") {
+
         // initialiser la page de facture payement
         initFacturePage();
     } else if (page === "list-facture.html") {
+
         //initialiser la page list facture
         initListFacturePage();
     }
@@ -17,10 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Facture actuellement affichée
 let currentInvoice = null;
+
 // etudient selectionné
 let selectedStudent = null;
 
 async function initFacturePage() {
+
     //recuperation de l'etudiant depuis le stockage local 
     const studentStr = localStorage.getItem("selectedStudent");
     if (!studentStr) {
@@ -32,6 +36,7 @@ async function initFacturePage() {
 
     // Rechercher une facture existante pour cet étudiant dans le cache local dans currentInvoice
     if (!localStorage.getItem("facturesData")) {
+
         //console.log("Inicialisation du cache des factures depuis le backend...");
         const response = await fetch("https://hook.us2.make.com/1vbfcorjkvg53yk4ki1ek14v7qmhvodq");
 
@@ -49,6 +54,7 @@ async function initFacturePage() {
 
     // If no invoice exists, we just display the form with default values and student info
     let numPayement = 0;
+
     // il faut s'assurer que les donner de l'étudiant selectionner pour sont premier paiment aprés payement sont identique au type des donner dans la liste des facture
     // il faut comparer le currentInvoice et le resultat du creat template avec les sonner
     if (currentInvoice.length) {
@@ -59,6 +65,7 @@ async function initFacturePage() {
     }
 
     fillFactureForm(selectedStudent, numPayement);
+
     /*
     function createTemplateInvoice(student) {
         return {
@@ -67,6 +74,7 @@ async function initFacturePage() {
             matricule: student.Matricule,
             nom: student.nom,
             prenom: student.prenom,
+
             niveau: student.niveau,
             date : null,
             
@@ -91,9 +99,9 @@ async function initFacturePage() {
 function fillFactureForm(infoStudent, numeroNextFact) {
     let refFacture = "FACT-" + crypto.randomUUID();
     let rest = infoStudent.totalAPayer - infoStudent.montantPaye;
+    
     // Student Info (Readonly)
     document.getElementById("vraiMatricule").value = infoStudent.Matricule || "pas de matricule";
-
     document.getElementById("nom").value = infoStudent.nom || "pas de nom";
     document.getElementById("prenom").value = infoStudent.prenom || "pas de prenom";
     document.getElementById("niveau").value = infoStudent.niveau || "pas de niveau";
@@ -105,14 +113,12 @@ function fillFactureForm(infoStudent, numeroNextFact) {
     document.getElementById("paymentNumber").value = numeroNextFact;
 
     // Amounts
-
     document.getElementById("totalAPayer").innerText = infoStudent.totalAPayer.toLocaleString();
     document.getElementById("dejaPayer").innerText = infoStudent.montantPaye.toLocaleString();
     document.getElementById("reste").innerText = rest.toLocaleString();
 
     // History
     const factures = JSON.parse(localStorage.getItem("facturesData"));
-
     currentInvoice = factures.filter(f => f.matricule === infoStudent.Matricule);
     console.log("current invoice", currentInvoice);
     if (currentInvoice) {
@@ -155,11 +161,9 @@ function renderPaymentHistory(payments) {
     });
 }
 
-
 function updateStatusBadge(reste) {
     const badge = document.getElementById("statusBadge");
     if (!badge) return;
-
     if (reste = 0) {
         badge.innerText = "SOLDE RÉGLÉ";
         badge.className = "p-3 rounded-lg bg-green-500 text-white text-center font-bold text-sm uppercase tracking-widest mt-6";
@@ -170,12 +174,10 @@ function updateStatusBadge(reste) {
 }
 
 async function enregistrerPaiement() {
-
     let totalAPayer = parseFloat(document.getElementById("totalAPayer").innerText.replace(/,/g, ""));
     let montants = parseFloat(document.getElementById("nouveauPaiement").value);
     let dejaPayer = parseFloat(document.getElementById("dejaPayer").innerText.replace(/,/g, "")) + montants;
     let rest = totalAPayer - (dejaPayer);
-
     const data = {
         etudiant: {
             matricule: document.getElementById("vraiMatricule").value,
@@ -241,11 +243,12 @@ async function enregistrerPaiement() {
             };
         }
     */
-    console.log("rest", rest);
+
     if (rest <0) {
         alert("Le montant dépasse le reste à payer. L'envoi est annulé.");
         return;
     }
+
     let nouvelDonnerFacture = {
         aktuellPay: data.paiement.montant,
         date: data.facture.dateFacture, // format ISO (ex: "2026-04-20T00:00:00.000Z")
@@ -263,7 +266,7 @@ async function enregistrerPaiement() {
         reste: data.resume.resteMoinNouvelPayement,
         totalAPayer: data.resume.totalAPayer
     };
-    console.log("nouvel donner facture",nouvelDonnerFacture);
+
     let facture = JSON.parse(localStorage.getItem("facturesData"));
     facture.push(nouvelDonnerFacture);
 
@@ -272,11 +275,8 @@ async function enregistrerPaiement() {
     let listEtudiant = JSON.parse(localStorage.getItem("studentsData"));
     let idStudentSelected = JSON.parse(localStorage.getItem("Index de l'etudiant selectionner type nombre"));
     
-    console.log("index de l'etudiant selectioner", idStudentSelected);
-    console.log("list des etudient avant payement", listEtudiant);
     let mdToModifLocalStorage = listEtudiant[idStudentSelected];
     mdToModifLocalStorage.montantPaye = data.resume.dejaPayerPlusNouvelPayement;
-    console.log("liste etudiant après payement", mdToModifLocalStorage);
 
     mdToModifLocalStorage.reste = data.resume.resteMoinNouvelPayement;
     listEtudiant[idStudentSelected] = mdToModifLocalStorage;
@@ -338,12 +338,14 @@ function formatDate(dateStr) {
 }
 
 function initListFacturePage() {
+
     // 1. Afficher instantanément depuis localStorage
     const cached = JSON.parse(localStorage.getItem("facturesData") || "[]");
     if (cached.length > 0) {
         allFactures = cached;
         renderFacturesTableLocale();
     }
+
     // 2. Synchronisation automatique en arrière-plan (silencieuse)
     syncFacturesDepuisServeur();
 }
@@ -384,6 +386,7 @@ function filtrerFactures() {
     }
 
     const resultats = allFactures.filter((f, _i) => {
+    
         // ── Filtre texte (référence, nom, prénom, niveau) ──
         let passTexte = true;
         if (texte !== "") {
@@ -421,6 +424,7 @@ function filtrerFactures() {
     }
 
     resultats.forEach((f, index) => {
+    
         // Retrouver l'index réel dans allFactures pour les boutons PDF/Supprimer
         const realIndex = allFactures.indexOf(f);
         const row = `
@@ -470,6 +474,7 @@ function clearFilter(fieldId) {
     if (el) { el.value = ""; el.focus(); }
     filtrerFactures();
 }
+
 // ===== FIN LOGIQUE DE FILTRAGE =====
 
 // Synchronisation depuis le serveur webhook → met à jour le localStorage
@@ -524,93 +529,94 @@ async function syncFacturesDepuisServeur() {
     }
 }
 
-function voirFacture(matricule) {
-    const studentsData = JSON.parse(localStorage.getItem("studentsData") || "[]");
-    const student = studentsData.find(s => s.matricule === matricule);
-
-    if (student) {
-        localStorage.setItem("selectedStudent", JSON.stringify(student));
-        window.location.href = "facture.html";
-    } else {
-        alert("Information de l'étudiant introuvable.");
-    }
-}
-
-function supprimerFacture(index) {
-    if (confirm("Voulez-vous vraiment supprimer cette facture de la liste ?")) {
-        allFactures.splice(index, 1);
-        // Persister la suppression dans localStorage
-        localStorage.setItem("facturesData", JSON.stringify(allFactures));
-        renderFacturesTableLocale();
-    }
-}
-
 function exportFacturePDF(index) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const f = allFactures[index];
 
-    if (!f) return;
-
-    // Title
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("FACTURE", 105, 20, { align: "center" });
-
-    // Reference and Date
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Référence: ${f.reference || "-"}`, 20, 35);
-    doc.text(`Date: ${formatDate(f.date || f.dateFacture)}`, 20, 40);
-
-    // Student Info Section
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Informations Étudiant:", 20, 55);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(`numero: ${f.matricule}`, 25, 65);
-    doc.text(`Matricule: ${f.Matricule || "-"}`, 25, 72);
-    doc.text(`Nom: ${f.nom}`, 25, 79);
-    doc.text(`Prénom: ${f.prenom}`, 25, 86);
-    doc.text(`Niveau: ${f.niveau}`, 25, 93);
-
-    // Summary Section
-    doc.setFont("helvetica", "bold");
-    doc.text("Résumé:", 20, 105);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(`Total à payer: ${Number(f.totalAPayer || 0).toLocaleString()} Ar`, 25, 115);
-    doc.text(`Versement actuel: ${Number(f.aktuellPay || f.Aktuell_pay || 0).toLocaleString()} Ar`, 25, 122);
-    doc.text(`Total déjà payé: ${Number(f.montantPaye || f.dejaPayer || f.DejatPayer || 0).toLocaleString()} Ar`, 25, 129);
-    doc.text(`Reste: ${Number(f.reste || 0).toLocaleString()} Ar`, 25, 136);
-
-    // Payment History Section
-    doc.setFont("helvetica", "bold");
-    doc.text("Historique des Paiements:", 20, 153);
-
-    // Table (Using data from the object)
-    const tableData = [[
-        f.numeroPaiement || f.numeroPaiemen || "1",
-        formatDate(f.date || f.datePaiement),
-        f.modePaiement || "-",
-        `${Number(f.aktuellPay || f.Aktuell_pay || f.montant || 0).toLocaleString()} Ar`
-    ]];
-
-    doc.autoTable({
-        startY: 160,
-        head: [['N°', 'Date', 'Mode', 'Montant']],
-        body: tableData,
-        theme: 'plain', // Black and white
-        styles: { textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.1 },
-        headStyles: { fontStyle: 'bold', fillColor: [240, 240, 240] }
+    // Format ticket thermique 80mm
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [80, 180]
     });
 
-    // Signature
-    const finalY = doc.lastAutoTable.finalY || 152;
-    doc.setFont("helvetica", "bold");
-    doc.text("Signature", 185, finalY + 25, { align: "right" });
+    const f = allFactures[index];
+    if (!f) return;
 
-    // Save
-    doc.save(`facture_${f.reference}.pdf`);
+    let y = 10;
+
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.text("FACTURE", 40, y, { align: "center" });
+
+    y += 8;
+    doc.setFontSize(8);
+    doc.setFont(undefined, "normal");
+
+    doc.text("--------------------------------", 5, y);
+    y += 5;
+
+    doc.text(`Ref : ${f.reference || "-"}`, 5, y);
+    y += 5;
+
+    doc.text(`Date : ${formatDate(f.date || f.dateFacture)}`, 5, y);
+    y += 5;
+
+    doc.text("--------------------------------", 5, y);
+    y += 5;
+
+    doc.text(`Mat : ${f.matricule || "-"}`, 5, y);
+    y += 5;
+
+    doc.text(`${f.nom || ""} ${f.prenom || ""}`, 5, y);
+    y += 5;
+
+    doc.text(`Niveau : ${f.niveau || "-"}`, 5, y);
+    y += 5;
+
+    doc.text("--------------------------------", 5, y);
+    y += 5;
+
+    doc.text(
+        `Total      : ${Number(f.totalAPayer || 0).toLocaleString()} Ar`,
+        5,
+        y
+    );
+    y += 5;
+
+    doc.text(
+        `Versement  : ${Number(
+            f.aktuellPay || f.Aktuell_pay || 0
+        ).toLocaleString()} Ar`,
+        5,
+        y
+    );
+    y += 5;
+
+    doc.text(
+        `Deja paye  : ${Number(
+            f.montantPaye || f.dejaPayer || 0
+        ).toLocaleString()} Ar`,
+        5,
+        y
+    );
+    y += 5;
+
+    doc.setFont(undefined, "bold");
+    doc.text(
+        `RESTE      : ${Number(f.reste || 0).toLocaleString()} Ar`,
+        5,
+        y
+    );
+
+    y += 10;
+
+    doc.setFont(undefined, "normal");
+    doc.text("--------------------------------", 5, y);
+    y += 6;
+
+    doc.text("Merci de votre paiement", 40, y, {
+        align: "center"
+    });
+
+    doc.save(`ticket_${f.reference || "facture"}.pdf`);
 }

@@ -5,7 +5,6 @@ if (!window.fetch) {
 }
 
 // session
-
 let nowtoken = sessionStorage.getItem("token");
 const expireTime = parseInt(sessionStorage.getItem("expireTime") || "0");
 
@@ -23,14 +22,15 @@ if (!nowtoken || !expireTime || now > expireTime) {
         sessionStorage.setItem("expireTime", String(newExpireTime));
     });
 });
+
 // Ajouter un écouteur d'événement pour réinitialiser le temps d'expiration à chaque mouvement de souris
 function logout() {
     sessionStorage.clear();
     localStorage.clear();
     window.location.href = "login.html";
 }
-// Fin du script session
 
+// Fin du script session
 function dateToISO(dateStr) {
     if (!dateStr) return null;
     const d = new Date(dateStr);
@@ -58,17 +58,28 @@ function isTrue(val) {
 function calculateAge(dateStr) {
     if (!dateStr) return "–";
 
-    let birthDate = new Date(dateStr);
-    let today = new Date();
+    // Cas : 01-12-2001T00:00:00.000Z
+    const match = dateStr.match(/^(\d{2})-(\d{2})-(\d{4})/);
+
+    if (match) {
+        const [, day, month, year] = match;
+        dateStr = `${year}-${month}-${day}T00:00:00.000Z`;
+    }
+
+    const birthDate = new Date(dateStr);
 
     if (isNaN(birthDate.getTime())) return "–";
 
+    const today = new Date();
+
     let age = today.getFullYear() - birthDate.getFullYear();
-    let monthDiff = today.getMonth() - birthDate.getMonth();
 
     if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        today.getMonth() < birthDate.getMonth() ||
+        (
+            today.getMonth() === birthDate.getMonth() &&
+            today.getDate() < birthDate.getDate()
+        )
     ) {
         age--;
     }
@@ -108,6 +119,7 @@ async function fetchStudents() {
     // Récupération de la réponse
     const rawData = await res.json();
     const data = rawData.map(item => {
+ 
         // Version robuste pour ignorer les problèmes de majuscule/minuscule ou d'espaces
         const lowerItem = {};
         for (let k in item) {
@@ -120,8 +132,8 @@ async function fetchStudents() {
             numero: item.numero || lowerItem.numero,
             nom: item.nom || lowerItem.nom,
             prenom: item.prenom || lowerItem.prenom,
-            dateNaissance: item.dateNaissance || lowerItem.datenaissance,
-            dateEntree: item.dateEntree || lowerItem.dateentree,
+            dateNaissance: isoToDate(item.dateNaissance || lowerItem.datenaissance),
+            dateEntree: isoToDate(item.dateEntree || lowerItem.dateentree),
             email: item.email || lowerItem.email,
             telephone: item.telephone || lowerItem.telephone,
             facebook: item.facebook || lowerItem.facebook,
@@ -138,13 +150,15 @@ async function fetchStudents() {
             cin: item.numCin || lowerItem.numcin || lowerItem.cin,
             Adresse: item.adresse || lowerItem.adresse,
             passport: item.numpass || lowerItem.numpass || lowerItem.passport,
-            datFinPass: item["date expiration pass"] || lowerItem["date expiration pass"],
+            datFinPass: isoToDate(item["date expiration pass"] || lowerItem["date expiration pass"]),
             numCop: item.numcopie || lowerItem.numcopie,
-            datFinCop: item["dateexpiration copie"] || lowerItem["dateexpiration copie"],
+            datFinCop: isoToDate(item["dateexpiration copie"] || lowerItem["dateexpiration copie"]),
             paramede: item.paramede || lowerItem.paramede,
-            Matricule: item.Matricule || lowerItem.matricule || item.matricule
+            Matricule: item.Matricule || lowerItem.matricule || item.matricule,
+            Age: calculateAge(item.dateNaissance || lowerItem.datenaissance)
         };
     });
+    
     students = data;
     console.log("Données mappées :", data);
     return data;
@@ -180,6 +194,7 @@ async function loadStudents() {
 }
 window.onload = loadStudents;
 let editIndex = null;
+
 // Initialisation depuis le cache si présent
 try {
     const cached = localStorage.getItem("studentsData");
@@ -189,7 +204,6 @@ console.log("Initial students:", students);
 
 
 // ===== AFFICHAGE =====
-
 function displayStudents(dataToDisplay = students) {
 
     const table = document.getElementById("studentTable");
@@ -199,19 +213,29 @@ function displayStudents(dataToDisplay = students) {
 
     // Garder une trace des étudiants affichés pour l'export
     window.currentDisplayedStudents = dataToDisplay;
-
+    
     const countEl = document.getElementById("studentCount");
     if (countEl) countEl.innerText = dataToDisplay.length;
+    const facturesData = JSON.parse(localStorage.getItem("facturesData") || "[]");
+let html = "";
 
-    dataToDisplay.forEach((s) => {
+dataToDisplay.forEach((s) => {
+    
+
+
         // Retrouver l'index original dans le tableau global students
         const originalIndex = students.indexOf(s);
 
         // 1. Load local payment data for synchronization
-        const facturesData = JSON.parse(localStorage.getItem("facturesData") || "[]");
         // Fix: Use String conversion to avoid type mismatch (e.g., number vs string)
-        const facture = facturesData.find(f => String(f.matricule) === String(s.matricule));
+        
+        //const facture = facturesData.find(f => String(f.matricule) === String(s.matricule));
+        const factureMap = {};
 
+         facturesData.forEach(f => {
+           factureMap[String(f.matricule)] = f;
+        });
+         const facture = factureMap[String(s.matricule)];
         // 2. Base totals from student metadata (totalAPayer is the source of truth for the debt)
         const total = parseFloat(s.totalAPayer) || 0;
 
@@ -241,23 +265,23 @@ function displayStudents(dataToDisplay = students) {
         } else {
             paiementStatus = rawStatus; // Fallback to raw string if any
         }
-
-        table.innerHTML += `
+        html +=
+       /* table.innerHTML +=*/ `
 <tr class="border-b border-[#e2e8f0] hover:bg-[#f8fafc] bg-white transition-colors">
 <td class="p-[14px] text-gray-700 font-bold">${s.numero || '–'}</td>
 <td class="p-[14px] text-gray-700 font-bold">${s.Matricule || '–'}</td>
 <td class="p-[14px] text-gray-700 font-medium">${s.nom}</td>
 <td class="p-[14px] text-gray-700">${s.prenom}</td>
-<td class="p-[14px] text-gray-700">${isoToDate(s.dateNaissance) || '–'}</td>
-<td class="p-[14px] text-gray-700">${isoToDate(s.dateEntree) || '–'}</td>
-<td class="p-[14px] text-gray-700 font-bold">${calculateAge(s.dateNaissance)}</td>
+<td class="p-[14px] text-gray-700">${(s.dateNaissance) || '–'}</td>
+<td class="p-[14px] text-gray-700">${(s.dateEntree) || '–'}</td>
+<td class="p-[14px] text-gray-700 font-bold">${(s.Age)}</td>
 <td class="p-[14px] text-gray-700">${s.cin || '–'}</td>
 <td class="p-[14px] text-gray-700">${s.email}</td>
 <td class="p-[14px] text-gray-700">${s.facebook || '–'}</td>
 <td class="p-[14px] text-gray-700">${s.telephone || '–'}</td>
 <td class="p-[14px] text-gray-700">${s.Adresse || '–'}</td>
 <td class="p-[14px] text-gray-700">${s.niveau}</td>
-<td class="p-[14px] text-gray-700 font-bold">${total.toLocaleString()} Ar</td>
+<td class="p-[14px] text-gray-700 font-bold">${total} Ar</td>
 <td class="p-[14px] text-gray-700 font-bold text-green-600">${montantPaye.toLocaleString()} Ar</td>
 <td class="p-[14px] text-gray-700 font-bold text-orange-600">${reste.toLocaleString()} Ar</td>
 <td class="p-[14px] text-center text-xs font-bold uppercase ${paiementStatus === 'Payer' || paiementStatus === 'PAYE' ? 'bg-green-50 text-green-600' : paiementStatus === 'En cours' || paiementStatus === 'EN COURS' ? 'bg-blue-50/50 text-blue-600' : 'bg-red-50 text-red-600'}">
@@ -271,9 +295,9 @@ function displayStudents(dataToDisplay = students) {
 <td class="p-[14px] text-gray-700 font-mono">${s.b2 || '–'}</td>
 <td class="p-[14px] text-center text-gray-700">${(s.Paramede !== undefined ? s.Paramede : s.paramede)}</td>
 <td class="p-[14px] text-gray-700">${s.passport || '–'}</td>
-<td class="p-[14px] text-gray-700">${isoToDate(s.datFinPass) || '–'}</td>
+<td class="p-[14px] text-gray-700">${(s.datFinPass) || '–'}</td>
 <td class="p-[14px] text-gray-700">${s.numCop || '–'}</td>
-<td class="p-[14px] text-gray-700">${isoToDate(s.datFinCop) || '–'}</td>
+<td class="p-[14px] text-gray-700">${(s.datFinCop) || '–'}</td>
 
 <td class="p-[14px]">
 <div class="flex items-center gap-3">
@@ -302,6 +326,7 @@ function displayStudents(dataToDisplay = students) {
 
     });
 
+table.innerHTML = html;
 }
 
 
@@ -601,7 +626,7 @@ function filterStudents() {
 }
 
 
-// ===== MODIFIER =====
+// ===== MODIFIER =====<
 
 function editStudent(index) {
     let student = students[index];

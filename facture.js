@@ -255,7 +255,7 @@ async function enregistrerPaiement() {
         dejaPayer: data.resume.dejaPayerPlusNouvelPayement,
         matricule: data.etudiant.matricule,
         modePaiement: data.facture.modePaiement,
-        montantPaye: data.paiement.montant + data.resume.dejaPayerPlusNouvelPayement,
+        montantPaye: data.paiement.montant,
         niveau: data.etudiant.niveau,
         nom: data.etudiant.nom,
         numeroPaiement: data.facture.paymentNumber,
@@ -441,7 +441,7 @@ function filtrerFactures() {
                 <td class="p-4 text-center text-xs text-gray-600 font-bold">${f.numeroPaiement || f.numeroPaiemen || "-"}</td>
                 <td class="p-4 text-center text-xs font-bold text-blue-600 bg-blue-50/50">${f.paiement || "0"}</td>
                 <td class="p-4 text-sm font-bold text-purple-600 whitespace-nowrap">${Number(f.aktuellPay || f.Aktuell_pay || 0).toLocaleString()} Ar</td>
-                <td class="p-4 text-sm font-bold text-green-600 whitespace-nowrap">${Number(f.montantPaye || f.dejaPayer || f.DejatPayer || 0).toLocaleString()} Ar</td>
+                <td class="p-4 text-sm font-bold text-green-600 whitespace-nowrap">${Number( f.dejaPayer || f.DejatPayer || 0).toLocaleString()} Ar</td>
                 <td class="p-4 text-sm font-bold text-gray-900 whitespace-nowrap">${Number(f.totalAPayer || 0).toLocaleString()} Ar</td>
                 <td class="p-4 text-sm font-black ${parseFloat(f.reste) > 0 ? 'text-orange-600' : 'text-green-600'} whitespace-nowrap">${Number(f.reste || 0).toLocaleString()} Ar</td>
                 <td class="p-4">

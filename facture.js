@@ -252,7 +252,7 @@ async function enregistrerPaiement() {
     let nouvelDonnerFacture = {
         aktuellPay: data.paiement.montant,
         date: data.facture.dateFacture, // format ISO (ex: "2026-04-20T00:00:00.000Z")
-        dejaPayer: data.resume.dejaPayerPlusNouvelPayement,
+        dejaPayer: data.resume.dejaPayerPlusNouvelPayement + data.paiement.montant,
         matricule: data.etudiant.matricule,
         modePaiement: data.facture.modePaiement,
         montantPaye: data.paiement.montant,

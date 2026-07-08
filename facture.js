@@ -252,10 +252,10 @@ async function enregistrerPaiement() {
     let nouvelDonnerFacture = {
         aktuellPay: data.paiement.montant,
         date: data.facture.dateFacture, // format ISO (ex: "2026-04-20T00:00:00.000Z")
-        dejaPayer: data.resume.dejaPayerPlusNouvelPayement + data.paiement.montant,
+        dejaPayer: data.resume.dejaPayerPlusNouvelPayement,
         matricule: data.etudiant.matricule,
         modePaiement: data.facture.modePaiement,
-        montantPaye: data.paiement.montant,
+        montantPaye: data.paiement.montant + data.resume.dejaPayerPlusNouvelPayement,
         niveau: data.etudiant.niveau,
         nom: data.etudiant.nom,
         numeroPaiement: data.facture.paymentNumber,
@@ -315,6 +315,7 @@ async function enregistrerPaiement() {
       //  console.log("Webhook success confirmed");
         if(result.success){
             alert("payement ajouter, le Facture est envoyer dans le boite mail du destinataire");
+
         }
 
 

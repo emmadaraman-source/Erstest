@@ -292,7 +292,6 @@ async function enregistrerPaiement() {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
     try {
-
         const response = await fetch("https://hook.us2.make.com/md3yx3d5vv6giauqd3qe5cn5colnbnl3", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

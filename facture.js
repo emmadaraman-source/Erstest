@@ -595,7 +595,7 @@ function exportFacturePDF(index) {
 
     doc.text(
         `Deja paye  : ${Number(
-            f.montantPaye || f.dejaPayer || 0
+           f.dejaPayer || 0
         ).toLocaleString()} Ar`,
         5,
         y

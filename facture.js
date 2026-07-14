@@ -324,7 +324,7 @@ async function enregistrerPaiement() {
             } catch (error) {
                 console.error("Webhook error:", error);
                 alert("Erreur : connexion impossible. Paiement non enregistré.");
-            }*/
+            }
 }
 
 // --- LIST FACTURES PAGE LOGIC ---

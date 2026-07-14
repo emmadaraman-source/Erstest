@@ -174,9 +174,9 @@ function updateStatusBadge(reste) {
 }
 
 async function enregistrerPaiement() {
-    let totalAPayer = parseFloat(document.getElementById("totalAPayer").innerText.replace(/,/g, ""));
+    let totalAPayer = parseFloat(document.getElementById("totalAPayer").innerText.replace(/[^\d.-]/g, ""));
     let montants = parseFloat(document.getElementById("nouveauPaiement").value);
-    let dejaPayer = parseFloat(document.getElementById("dejaPayer").innerText.replace(/,/g, "")) + montants;
+    let dejaPayer = parseFloat(document.getElementById("dejaPayer").innerText.replace(/[^\d.-]/g, "")) + montants;
     let rest = totalAPayer - (dejaPayer);
     console.log("totalAPayer", totalAPayer);
     console.log("dejaPayer", dejaPayer);

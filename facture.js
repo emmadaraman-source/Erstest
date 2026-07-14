@@ -99,7 +99,7 @@ async function initFacturePage() {
 function fillFactureForm(infoStudent, numeroNextFact) {
     let refFacture = "FACT-" + crypto.randomUUID();
     let rest = infoStudent.totalAPayer - infoStudent.montantPaye;
-    
+
     // Student Info (Readonly)
     document.getElementById("vraiMatricule").value = infoStudent.Matricule || "pas de matricule";
     document.getElementById("nom").value = infoStudent.nom || "pas de nom";
@@ -124,7 +124,7 @@ function fillFactureForm(infoStudent, numeroNextFact) {
     if (currentInvoice) {
         renderPaymentHistory(currentInvoice);
     }
-    
+
     updateStatusBadge(rest);
 
     // Toggle Payment Form Visibility
@@ -178,6 +178,10 @@ async function enregistrerPaiement() {
     let montants = parseFloat(document.getElementById("nouveauPaiement").value);
     let dejaPayer = parseFloat(document.getElementById("dejaPayer").innerText.replace(/,/g, "")) + montants;
     let rest = totalAPayer - (dejaPayer);
+    console.log("totalAPayer", totalAPayer);
+    console.log("dejaPayer", dejaPayer);
+    console.log("rest", rest);
+    /*
     const data = {
         etudiant: {
             matricule: document.getElementById("vraiMatricule").value,
@@ -243,86 +247,86 @@ async function enregistrerPaiement() {
             };
         }
     */
-
-    if (rest <0) {
-        alert("Le montant dépasse le reste à payer. L'envoi est annulé.");
-        return;
-    }
-
-    let nouvelDonnerFacture = {
-        aktuellPay: data.paiement.montant,
-        date: data.facture.dateFacture, // format ISO (ex: "2026-04-20T00:00:00.000Z")
-        dejaPayer: data.resume.dejaPayerPlusNouvelPayement,
-        matricule: data.etudiant.matricule,
-        modePaiement: data.facture.modePaiement,
-        montantPaye: data.paiement.montant,
-        niveau: data.etudiant.niveau,
-        nom: data.etudiant.nom,
-        numeroPaiement: data.facture.paymentNumber,
-        paiement: data.resume.status,
-        prenom: data.etudiant.prenom,
-        raison: data.facture.raison,
-        reference: data.facture.reference,
-        reste: data.resume.resteMoinNouvelPayement,
-        totalAPayer: data.resume.totalAPayer
-    };
-
-    let facture = JSON.parse(localStorage.getItem("facturesData"));
-    facture.push(nouvelDonnerFacture);
-
-    localStorage.removeItem("facturesData");
-    localStorage.setItem("facturesData",JSON.stringify(facture));
-    let listEtudiant = JSON.parse(localStorage.getItem("studentsData"));
-    let idStudentSelected = JSON.parse(localStorage.getItem("Index de l'etudiant selectionner type nombre"));
+    /*
+        if (rest < 0) {
+            alert("Le montant dépasse le reste à payer. L'envoi est annulé.");
+            return;
+        }
     
-    let mdToModifLocalStorage = listEtudiant[idStudentSelected];
-    mdToModifLocalStorage.montantPaye = data.resume.dejaPayerPlusNouvelPayement;
-
-    mdToModifLocalStorage.reste = data.resume.resteMoinNouvelPayement;
-    listEtudiant[idStudentSelected] = mdToModifLocalStorage;
-    localStorage.removeItem("studentsData");
-    localStorage.setItem("studentsData",JSON.stringify(listEtudiant));
-
-    // 3. Prepare data for the webhook (Final state values)
-    //const today = new Date().toLocaleDateString('fr-CA');
-
-
-    // 4. Send to Webhook with Timeout Protection
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-
-    try {
-        const response = await fetch("https://hook.us2.make.com/md3yx3d5vv6giauqd3qe5cn5colnbnl3", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`HTTP Error ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        // Ensure backend explicitly confirmed success
-        if (result && result.success === false) {
-            throw new Error("Webhook returned success:false");
-        }
-
-      //  console.log("Webhook success confirmed");
-        if(result.success){
-            alert("payement ajouter, le Facture est envoyer dans le boite mail du destinataire");
-
-        }
-
-
+        let nouvelDonnerFacture = {
+            aktuellPay: data.paiement.montant,
+            date: data.facture.dateFacture, // format ISO (ex: "2026-04-20T00:00:00.000Z")
+            dejaPayer: data.resume.dejaPayerPlusNouvelPayement,
+            matricule: data.etudiant.matricule,
+            modePaiement: data.facture.modePaiement,
+            montantPaye: data.paiement.montant,
+            niveau: data.etudiant.niveau,
+            nom: data.etudiant.nom,
+            numeroPaiement: data.facture.paymentNumber,
+            paiement: data.resume.status,
+            prenom: data.etudiant.prenom,
+            raison: data.facture.raison,
+            reference: data.facture.reference,
+            reste: data.resume.resteMoinNouvelPayement,
+            totalAPayer: data.resume.totalAPayer
+        };
     
-        } catch (error) {
-            console.error("Webhook error:", error);
-            alert("Erreur : connexion impossible. Paiement non enregistré.");
-        }
+        let facture = JSON.parse(localStorage.getItem("facturesData"));
+        facture.push(nouvelDonnerFacture);
+    
+        localStorage.removeItem("facturesData");
+        localStorage.setItem("facturesData",JSON.stringify(facture));
+        let listEtudiant = JSON.parse(localStorage.getItem("studentsData"));
+        let idStudentSelected = JSON.parse(localStorage.getItem("Index de l'etudiant selectionner type nombre"));
+        
+        let mdToModifLocalStorage = listEtudiant[idStudentSelected];
+        mdToModifLocalStorage.montantPaye = data.resume.dejaPayerPlusNouvelPayement;
+    
+        mdToModifLocalStorage.reste = data.resume.resteMoinNouvelPayement;
+        listEtudiant[idStudentSelected] = mdToModifLocalStorage;
+        localStorage.removeItem("studentsData");
+        localStorage.setItem("studentsData",JSON.stringify(listEtudiant));
+    
+        // 3. Prepare data for the webhook (Final state values)
+        //const today = new Date().toLocaleDateString('fr-CA');
+    
+    
+        // 4. Send to Webhook with Timeout Protection
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
+        try {
+            const response = await fetch("https://hook.us2.make.com/md3yx3d5vv6giauqd3qe5cn5colnbnl3", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+    
+            clearTimeout(timeoutId);
+    
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}`);
+            }
+    
+            const result = await response.json();
+    
+            // Ensure backend explicitly confirmed success
+            if (result && result.success === false) {
+                throw new Error("Webhook returned success:false");
+            }
+    
+          //  console.log("Webhook success confirmed");
+            if(result.success){
+                alert("payement ajouter, le Facture est envoyer dans le boite mail du destinataire");
+    
+            }
+    
+    
+        
+            } catch (error) {
+                console.error("Webhook error:", error);
+                alert("Erreur : connexion impossible. Paiement non enregistré.");
+            }*/
 }
 
 // --- LIST FACTURES PAGE LOGIC ---
@@ -386,7 +390,7 @@ function filtrerFactures() {
     }
 
     const resultats = allFactures.filter((f, _i) => {
-    
+
         // ── Filtre texte (référence, nom, prénom, niveau) ──
         let passTexte = true;
         if (texte !== "") {
@@ -424,7 +428,7 @@ function filtrerFactures() {
     }
 
     resultats.forEach((f, index) => {
-    
+
         // Retrouver l'index réel dans allFactures pour les boutons PDF/Supprimer
         const realIndex = allFactures.indexOf(f);
         const row = `
@@ -440,7 +444,7 @@ function filtrerFactures() {
                 <td class="p-4 text-center text-xs text-gray-600 font-bold">${f.numeroPaiement || f.numeroPaiemen || "-"}</td>
                 <td class="p-4 text-center text-xs font-bold text-blue-600 bg-blue-50/50">${f.paiement || "0"}</td>
                 <td class="p-4 text-sm font-bold text-purple-600 whitespace-nowrap">${Number(f.aktuellPay || f.Aktuell_pay || 0).toLocaleString()} Ar</td>
-                <td class="p-4 text-sm font-bold text-green-600 whitespace-nowrap">${Number( f.dejaPayer || f.DejatPayer || 0).toLocaleString()} Ar</td>
+                <td class="p-4 text-sm font-bold text-green-600 whitespace-nowrap">${Number(f.dejaPayer || f.DejatPayer || 0).toLocaleString()} Ar</td>
                 <td class="p-4 text-sm font-bold text-gray-900 whitespace-nowrap">${Number(f.totalAPayer || 0).toLocaleString()} Ar</td>
                 <td class="p-4 text-sm font-black ${parseFloat(f.reste) > 0 ? 'text-orange-600' : 'text-green-600'} whitespace-nowrap">${Number(f.reste || 0).toLocaleString()} Ar</td>
                 <td class="p-4">
@@ -594,7 +598,7 @@ function exportFacturePDF(index) {
 
     doc.text(
         `Deja paye  : ${Number(
-           f.dejaPayer || f.DejatPayer || 0
+            f.dejaPayer || f.DejatPayer || 0
         ).toLocaleString()} Ar`,
         5,
         y

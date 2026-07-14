@@ -178,10 +178,8 @@ async function enregistrerPaiement() {
     let montants = parseFloat(document.getElementById("nouveauPaiement").value);
     let dejaPayer = parseFloat(document.getElementById("dejaPayer").innerText.replace(/[^\d.-]/g, "")) + montants;
     let rest = totalAPayer - (dejaPayer);
-    console.log("totalAPayer", totalAPayer);
-    console.log("dejaPayer", dejaPayer);
-    console.log("rest", rest);
-    /*
+    
+    
     const data = {
         etudiant: {
             matricule: document.getElementById("vraiMatricule").value,
@@ -247,7 +245,7 @@ async function enregistrerPaiement() {
             };
         }
     */
-    /*
+    
         if (rest < 0) {
             alert("Le montant dépasse le reste à payer. L'envoi est annulé.");
             return;

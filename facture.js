@@ -270,6 +270,11 @@ async function enregistrerPaiement() {
         };
     
         let facture = JSON.parse(localStorage.getItem("facturesData"));
+        if ((nouvelDonnerFacture.totalAPayer - nouvelDonnerFacture.dejaPayer) === 0){
+            nouvelDonnerFacture.paiement = "PAYER";
+        }else{
+            nouvelDonnerFacture.paiement = "EN COURS";
+        }
         facture.push(nouvelDonnerFacture);
     
         localStorage.removeItem("facturesData");
@@ -279,7 +284,7 @@ async function enregistrerPaiement() {
         
         let mdToModifLocalStorage = listEtudiant[idStudentSelected];
         mdToModifLocalStorage.montantPaye = data.resume.dejaPayerPlusNouvelPayement;
-    
+        mdToModifLocalStorage.paiement = nouvelDonnerFacture.paiement;
         mdToModifLocalStorage.reste = data.resume.resteMoinNouvelPayement;
         listEtudiant[idStudentSelected] = mdToModifLocalStorage;
         localStorage.removeItem("studentsData");
@@ -316,7 +321,7 @@ async function enregistrerPaiement() {
           //  console.log("Webhook success confirmed");
             if(result.success){
                 alert("payement ajouter, le Facture est envoyer dans le boite mail du destinataire");
-    
+                window.location.href = "list-facture.html";
             }
     
     

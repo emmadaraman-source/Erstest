@@ -440,7 +440,7 @@ async function ajoutermodifierEtudiant(event) {
         if ((student.totalAPayer - student.montantPaye) === 0){
             student.paiement = "Payer";
         }else{
-            student.paiement = "En cours";
+            student.paiement = "EN COURS";
         }
         students[editIndexParam] = student;
         

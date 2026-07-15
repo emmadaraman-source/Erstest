@@ -378,7 +378,7 @@ function clearForm() {
 }*/
 
 let isSubmitting = false;
-let Ajout_mofif_webhook = "https://hook.us2.make.com/opeawjxysicr56wqy3ekpfkdll071u4t";
+let Ajout_mofif_webhook = "https://hook.us2.make.com/l3ykkvvwvvfws27xb1gkylc2bef1xpp3";
 async function ajoutermodifierEtudiant(event) {
 
     if (event) event.preventDefault();
@@ -434,14 +434,24 @@ async function ajoutermodifierEtudiant(event) {
 
     let code = "";
     if (editIndexParam !== null) {
+
+        //student.numero = existingStudent.numero; // Preserve the original numero on edit
+        student.numero = students[editIndexParam].numero; // Preserve the original matricule on edit
+        if ((student.totalAPayer - student.montantPaye) === 0){
+            student.paiement = "Payer";
+        }else{
+            student.paiement = "En cours";
+        }
         students[editIndexParam] = student;
+        
         code = "mdf";
     } else {
+
         students.push(student);
         code = "ajt";
     }
-    // ajout et modification
 
+    // ajout et modification
     try {
         const dataToSend = {
             numero: student.matricule,
@@ -490,6 +500,7 @@ async function ajoutermodifierEtudiant(event) {
         const text = await res.json();
 
         if (text.success) {
+
             localStorage.removeItem("studentsData");
             localStorage.setItem("studentsData", JSON.stringify(students));
             localStorage.removeItem("studentToEdit");
